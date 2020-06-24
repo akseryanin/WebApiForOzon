@@ -13,38 +13,38 @@ using WebApplication.ExchnageRateDb;
 
 namespace DailyExchange
 {
-    /// <summary>
-    /// ������ �� ������� WorkerService
-    /// </summary>
     public class Worker : BackgroundService
     {
-        private int period = 5000;
         private Timer _timer;
         private DateTime _lastDateUpdate = new DateTime();
         private readonly ILogger<Worker> _logger;
         private readonly IExchnageRateRepository _repository;
 
-        public Worker(ILogger<Worker> logger, IExchnageRateRepository repository, IConfiguration config)
+        public Worker(ILogger<Worker> logger, IExchnageRateRepository repository, IConfiguration configuration)
         {
             _logger = logger;
             _repository = repository;
-            period = config.GetSection("Period").Get<int>();
-            _timer = new Timer(this.UpdateExchangeRates, null, 0, period);
-            
+            // Задаем время в секундах
+            if(!int.TryParse(configuration["Period"] ?? "86400", out int period))
+                period = 86400;
+            _timer = new Timer(this.UpdateExchangeRates, null, 0, period * 1000);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(period);
+            Console.WriteLine("Passed 10 seconds");
+            await Task.Delay(10000);
         }
 
         private void UpdateExchangeRates(object stateInfo)
         {
+            // TODO should we wait for it?
             GetUpdatesAsync().Wait();
         }
 
         private async Task GetUpdatesAsync()
         {
+            // Защита от скачивания повторных данных
             if (_lastDateUpdate == DateTime.Today)
                 return;
             var url = 
@@ -53,37 +53,42 @@ namespace DailyExchange
             var response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
+            //To add result into DB
             await _repository.AddRangeAsync(ParseFromResponse(await response.Content.ReadAsStreamAsync()));
             _lastDateUpdate = DateTime.Today;
-            
-            var res = ParseFromResponse(await response.Content.ReadAsStreamAsync());
-            foreach (var elem in res)
-            {
-                Console.WriteLine($"{elem.Code} {elem.Rate}");
-            }
         }
 
-        /// <summary>
-        /// ���� ���������� ������
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
+        
+        // Чуть более усложненный вариант
         private IEnumerable<ExchangeRate> ParseFromResponse(Stream stream)
         {
             using var reader = new StreamReader(stream);
             var lines = ArrayPool<string>.Shared.Rent(50);
             int index = 0;
+            var span = ReadOnlySpan<char>.Empty; // to store lines 
             string line;
+            
             while (!string.IsNullOrEmpty(line = reader.ReadLine()))
                 lines[index++] = line;
             for(var i = 2; i < index; i++)
             {
-                var elems = lines[i].Split('|').Skip(2).ToList();
+                span = lines[i].AsSpan();
+
+                var indexOfSep = span.LastIndexOf('|');
+                var rate = span.Slice(indexOfSep + 1);
+                span = span.Slice(0, indexOfSep);
+            
+                indexOfSep = span.LastIndexOf('|');
+                var code = span.Slice(indexOfSep + 1);
+                span = span.Slice(0, indexOfSep);
+            
+                indexOfSep = span.LastIndexOf('|');
+                var amount = span.Slice(indexOfSep + 1);
                 yield return new ExchangeRate
                 {
                     Date = DateTime.Today,
-                    Code = elems[1],
-                    Rate = decimal.Parse(elems[2]) / int.Parse(elems[0])
+                    Code = code.ToString(),
+                    Rate = decimal.Parse(rate) / int.Parse(amount)
                 };
             }
             ArrayPool<string>.Shared.Return(lines);
