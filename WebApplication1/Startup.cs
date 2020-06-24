@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using WebApplication.ExchnageRateDb;
 
-namespace WebApplicationForOzon
+namespace WebApplication1
 {
     public class Startup
     {
@@ -26,6 +21,10 @@ namespace WebApplicationForOzon
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddDbContext<ExchangeRateContext>(builder =>
+                builder.UseSqlServer(Configuration.GetConnectionString("Default"), optionsBuilder =>
+                    optionsBuilder.MigrationsAssembly("WebApi")));
+            services.AddScoped<IExchnageRateRepository, ExchangeRateRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,7 +39,6 @@ namespace WebApplicationForOzon
 
             app.UseRouting();
 
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="WebApplication.ExchnageRateDb\**" />
+    <Compile Remove="DailyExchange\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="WebApplication.ExchnageRateDb\**" />
+    <EmbeddedResource Remove="DailyExchange\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="WebApplication.ExchnageRateDb\**" />
+    <None Remove="DailyExchange\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="WebApplication.ExchnageRateDb\**" />
+    <Content Remove="DailyExchange\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="WebApplication.ExchnageRateDb\obj\project.assets.json" />
+    <_ContentIncludedByDefault Remove="WebApplication.ExchnageRateDb\obj\project.packagespec.json" />
+    <_ContentIncludedByDefault Remove="WebApplication.ExchnageRateDb\obj\WebApplication.ExchnageRateDb.csproj.nuget.dgspec.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\appsettings.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\obj\DailyExchange.csproj.nuget.dgspec.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\obj\project.assets.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\obj\project.packagespec.json" />
+    <_ContentIncludedByDefault Remove="DailyExchange\Properties\launchSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.5" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebApplication.ExchnageRateDb\WebApplication.ExchnageRateDb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.5" />
+  </ItemGroup>
+
+
+</Project>
